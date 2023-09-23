@@ -1,0 +1,18 @@
+# Use an official Python runtime as a base image
+FROM python:3.8 AS base
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Set PYTHONPATH
+ENV PYTHONPATH=/app
+
+# Copy requirements.txt and install dependencies
+COPY ./rabbitmq/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the current directory contents into the container
+COPY . /app
+
+# Run producer when the container launches
+CMD ["sh", "-c", "python rabbitmq/producer.py"]
