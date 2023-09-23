@@ -1,11 +1,15 @@
 import json
 import os
+from random import choice, randint, uniform
 
 import pika
 from dotenv import load_dotenv
+from faker import Faker
 
 # Load the .env file
 load_dotenv(".env")
+
+fake = Faker()
 
 # Get RabbitMQ and queue settings from environment variables
 rabbitmq_host = os.getenv("RABBITMQ_HOST")
@@ -22,17 +26,17 @@ channel = connection.channel()
 
 channel.queue_declare(queue=rabbitmq_queue_name)
 
-cosmonaut_data = {
-    "first_name": "John",
-    "last_name": "Doe",
-    "age": 30,
-    "gender": "male",
-    "nationality": "American",
-    "specialization": "Engineer",
-    "time_in_space": 181.0,
-}
-
 for i in range(num_messages):  # Using the value from .env
-    channel.basic_publish(exchange="", routing_key=rabbitmq_queue_name, body=json.dumps(cosmonaut_data))
+    random_cosmonaut_data = {
+        "first_name": fake.first_name(),
+        "last_name": fake.last_name(),
+        "age": randint(20, 60),
+        "gender": choice(["male", "female"]),
+        "nationality": fake.country(),
+        "specialization": choice(["Engineer", "Doctor", "Physicist", "Chemist"]),
+        "time_in_space": round(uniform(0, 500), 2),
+    }
+
+    channel.basic_publish(exchange="", routing_key=rabbitmq_queue_name, body=json.dumps(random_cosmonaut_data))
 
 connection.close()
