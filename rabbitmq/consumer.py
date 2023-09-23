@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from models.cosmonaut import Cosmonaut, CosmonautCreate
+from models.cosmonaut import Base, Cosmonaut, CosmonautCreate
 
 # Load the .env file
 load_dotenv(".env")
@@ -25,6 +25,9 @@ parameters = pika.ConnectionParameters(host=rabbitmq_host, credentials=credentia
 DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 session = Session(engine)
+
+# Create all tables if they are already not created
+Base.metadata.create_all(engine)
 
 
 def callback(ch, method, properties, body):
