@@ -1,0 +1,52 @@
+version: '3'
+services:
+  # API service for reading cosmonauts from the database
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile_api
+    ports:
+      - "8000:80"
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+  # RabbitMQ consumer for consuming messages (storring to DB) containing data for cosmonaut from the queue
+  rabbitmq_consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile_rabbitmq_consumer
+    depends_on:
+      - db
+      - rabbitmq_mgmt
+    env_file:
+      - .env
+
+  # RabbitMQ producer for sending messages data for cosmonauts to the queue
+  rabbitmq_producer:
+    build:
+      context: .
+      dockerfile: Dockerfile_rabbitmq_producer
+    depends_on:
+      - db
+      - rabbitmq_mgmt
+    env_file:
+      - .env
+
+  # UI management for rabbitMQ
+  rabbitmq_mgmt:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - .env
+
+  # Postgres database
+  db:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
