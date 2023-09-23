@@ -11,10 +11,11 @@ from models.cosmonaut import Cosmonaut, CosmonautCreate
 # Load the .env file
 load_dotenv(".env")
 
-# Get RabbitMQ settings from environment variables
+# Get RabbitMQ and other settings from environment variables
 rabbitmq_host = os.getenv("RABBITMQ_HOST")
 rabbitmq_user = os.getenv("RABBITMQ_DEFAULT_USER")
 rabbitmq_password = os.getenv("RABBITMQ_DEFAULT_PASS")
+rabbitmq_queue_name = os.getenv("RABBITMQ_QUEUE_NAME")  # Default to "cosmonauts" if not set
 
 # Setup RabbitMQ Connection
 credentials = pika.PlainCredentials(rabbitmq_user, rabbitmq_password)
@@ -29,7 +30,7 @@ session = Session(engine)
 def callback(ch, method, properties, body):
     data = json.loads(body)
 
-    # Convert the CosmonautCreate data into a Cosmonaut ORM object to validate it
+    # Convert the CosmonautCreate data into a Cosmonaut ORM object and validate it
     new_cosmonaut_data = CosmonautCreate(**data)
     new_cosmonaut = Cosmonaut(**new_cosmonaut_data.dict())
 
@@ -42,8 +43,10 @@ def callback(ch, method, properties, body):
 connection = pika.BlockingConnection(parameters)
 channel = connection.channel()
 
-channel.queue_declare(queue="cosmonauts")
-channel.basic_consume(queue="cosmonauts", on_message_callback=callback, auto_ack=True)
+channel.queue_declare(queue=rabbitmq_queue_name)  # Using the queue name from .env
+channel.basic_consume(
+    queue=rabbitmq_queue_name, on_message_callback=callback, auto_ack=True
+)  # Using the queue name from .env
 
-print(" [*] Waiting for messages. To exit press CTRL+C")
+print(f" [*] Waiting for messages in queue {rabbitmq_queue_name}. To exit press CTRL+C")
 channel.start_consuming()
