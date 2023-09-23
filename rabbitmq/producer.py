@@ -32,6 +32,8 @@ cosmonaut_data = {
 
 channel.basic_publish(exchange="", routing_key="cosmonauts", body=json.dumps(cosmonaut_data))
 
-print(f" [x] Sent {cosmonaut_data}")
+for i in range(1_000_000):  # Sending 1 000 000 messages
+    channel.basic_publish(exchange="", routing_key="cosmonauts", body=json.dumps(cosmonaut_data))
+
 
 connection.close()
