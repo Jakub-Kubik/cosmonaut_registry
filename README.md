@@ -6,12 +6,10 @@ This project serves as a cosmonaut data management system, primarily focusing on
 
 ## Features
 
+- Dockerized components for easy setup and deployment
 - RESTful API for fetching cosmonaut data
 - Producer-Consumer pattern using RabbitMQ for asynchronous data storing
 - Backend database using PostgreSQL
-- Dockerized components for easy setup and deployment
-- FastAPI auto-generated OpenAPI documentation
-- Robust error handling
 
 ## Installation and Setup
 
