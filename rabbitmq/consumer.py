@@ -17,7 +17,7 @@ load_dotenv(".env")
 rabbitmq_host = os.getenv("RABBITMQ_HOST")
 rabbitmq_user = os.getenv("RABBITMQ_DEFAULT_USER")
 rabbitmq_password = os.getenv("RABBITMQ_DEFAULT_PASS")
-rabbitmq_queue_name = os.getenv("RABBITMQ_QUEUE_NAME")  # Default to "cosmonauts" if not set
+rabbitmq_queue_name = os.getenv("RABBITMQ_QUEUE_NAME")
 
 # Setup RabbitMQ Connection
 credentials = pika.PlainCredentials(rabbitmq_user, rabbitmq_password)
@@ -36,35 +36,35 @@ Base.metadata.create_all(engine)
 
 
 def callback(ch, method, properties, body):
-    # if not hasattr(thread_local, "bulk_data"):
-    #     thread_local.bulk_data = []
+    if not hasattr(thread_local, "bulk_data"):
+        thread_local.bulk_data = []
 
     if not hasattr(thread_local, "session"):
         thread_local.session = Session()
 
     session = thread_local.session
-    # bulk_data = thread_local.bulk_data
+    bulk_data = thread_local.bulk_data
 
     data = json.loads(body)
     new_cosmonaut_data = CosmonautCreate(**data)
     new_cosmonaut = Cosmonaut(**new_cosmonaut_data.dict())
 
-    # bulk_data.append(new_cosmonaut)
+    bulk_data.append(new_cosmonaut)
 
     ##########################################
     # benchmark 3
     ##########################################
     # Store the new cosmonaut in the database
-    session.add(new_cosmonaut)
-    session.commit()
+    # session.add(new_cosmonaut)
+    # session.commit()
 
     ##########################################
     # benchmark 4
     ##########################################
-    # if len(bulk_data) >= 100:
-    #     session.bulk_save_objects(bulk_data)
-    #     session.commit()
-    #     bulk_data.clear()
+    if len(bulk_data) >= 100:
+        session.bulk_save_objects(bulk_data)
+        session.commit()
+        bulk_data.clear()
 
 
 def start_consumer():
