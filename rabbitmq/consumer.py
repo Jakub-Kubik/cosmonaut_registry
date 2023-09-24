@@ -29,26 +29,32 @@ session = Session(engine)
 # Create all tables if they are already not created
 Base.metadata.create_all(engine)
 
-bulk_data = []
+# bulk_data = []
 
 
 def callback(ch, method, properties, body):
-    global bulk_data
+    # global bulk_data
     data = json.loads(body)
 
     # Convert the CosmonautCreate data into a Cosmonaut ORM object and validate it
     new_cosmonaut_data = CosmonautCreate(**data)
     new_cosmonaut = Cosmonaut(**new_cosmonaut_data.dict())
 
-    # # Store the new cosmonaut in the database
-    # session.add(new_cosmonaut)
-    # session.commit()
+    ##########################################
+    # benchmark 1
+    ##########################################
+    # Store the new cosmonaut in the database
+    session.add(new_cosmonaut)
+    session.commit()
 
-    bulk_data.append(new_cosmonaut)
-    if len(bulk_data) >= 100:
-        session.bulk_save_objects(bulk_data)
-        session.commit()
-        bulk_data = []
+    # ##########################################
+    # # benchmark 2
+    # ##########################################
+    # bulk_data.append(new_cosmonaut)
+    # if len(bulk_data) >= 100:
+    #     session.bulk_save_objects(bulk_data)
+    #     session.commit()
+    #     bulk_data = []
 
 
 # Main RabbitMQ consumer setup
